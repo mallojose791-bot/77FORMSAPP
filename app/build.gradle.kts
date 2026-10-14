@@ -1,7 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Dev-only values come from local.properties (never committed).
+val localProps = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun String.asBuildConfigString(): String =
+    "\"" + replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "com.example.a77formsapp"
@@ -14,15 +25,30 @@ android {
     defaultConfig {
         applicationId = "com.example.a77formsapp"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "HRF_BASE_URL", "https://d13i3lzlpfwhol.cloudfront.net".asBuildConfigString())
     }
 
     buildTypes {
+        debug {
+            // Session cookie is only baked into debug builds.
+            buildConfigField(
+                "String", "HRF_DEV_SESSION",
+                localProps.getProperty("HRF_DEV_SESSION", "").trim().asBuildConfigString()
+            )
+            buildConfigField(
+                "String", "HRF_DEV_ALB",
+                localProps.getProperty("HRF_DEV_ALB", "").trim().asBuildConfigString()
+            )
+        }
         release {
+            buildConfigField("String", "HRF_DEV_SESSION", "".asBuildConfigString())
+            buildConfigField("String", "HRF_DEV_ALB", "".asBuildConfigString())
             optimization {
                 enable = false
             }
@@ -35,6 +61,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

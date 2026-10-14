@@ -34,9 +34,11 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +78,7 @@ fun HomeScreen(
     onFormClick: (FormItem) -> Unit,
     themeMode: ThemeMode,
     onThemeModeChange: (ThemeMode) -> Unit,
+    onSignOut: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -90,7 +93,13 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { HomeTopBar(themeMode = themeMode, onThemeModeChange = onThemeModeChange) },
+        topBar = {
+            HomeTopBar(
+                themeMode = themeMode,
+                onThemeModeChange = onThemeModeChange,
+                onSignOut = onSignOut
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Box(
@@ -124,7 +133,8 @@ fun HomeScreen(
 @Composable
 private fun HomeTopBar(
     themeMode: ThemeMode,
-    onThemeModeChange: (ThemeMode) -> Unit
+    onThemeModeChange: (ThemeMode) -> Unit,
+    onSignOut: () -> Unit
 ) {
     var menuOpen by remember { mutableStateOf(false) }
 
@@ -138,7 +148,7 @@ private fun HomeTopBar(
         },
         actions = {
             IconButton(onClick = { menuOpen = true }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Appearance")
+                Icon(Icons.Default.MoreVert, contentDescription = "Menu")
             }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                 Text(
@@ -157,6 +167,14 @@ private fun HomeTopBar(
                         }
                     )
                 }
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text("Sign out") },
+                    onClick = {
+                        menuOpen = false
+                        onSignOut()
+                    }
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
